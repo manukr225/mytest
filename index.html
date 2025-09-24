@@ -2,180 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Free Live TV</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
+  <title>Test Embed Video</title>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       margin: 0;
-      background: #111;
-      color: #fff;
+      background-color: #000;
     }
-
-    header {
-      padding: 1rem;
-      background: #222;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-
-    #search {
-      width: 90%;
-      max-width: 500px;
-      padding: 0.5rem;
-      font-size: 1rem;
-      margin: 1rem auto;
-      display: block;
-      border-radius: 5px;
+    iframe {
       border: none;
-    }
-
-    #channels {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 1rem;
-      padding: 1rem;
-    }
-
-    .channel {
-      background: #222;
-      border-radius: 8px;
-      overflow: hidden;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .channel:hover {
-      transform: scale(1.05);
-    }
-
-    .channel img {
-      width: 100%;
-      height: 100px;
-      object-fit: cover;
-    }
-
-    .channel p {
-      margin: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    #status {
-      text-align: center;
-      margin-top: 2rem;
-      color: #aaa;
-    }
-
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.8rem;
-      color: #555;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>📺 Free Live TV</h1>
-    <input type="text" id="search" placeholder="Search channels..." />
-  </header>
-
-  <main>
-    <div id="channels"></div>
-    <p id="status">Loading channels...</p>
-  </main>
-
-  <footer>
-    &copy; 2025 Free Live TV. All rights reserved.
-  </footer>
-
-  <script>
-    const API_URL = 'https://iptv-org.github.io/api/channels.json';
-    const searchInput = document.getElementById('search');
-    const channelsContainer = document.getElementById('channels');
-    const statusMessage = document.getElementById('status');
-
-    let channelsData = [];
-
-    function renderChannels(filter = '') {
-      channelsContainer.innerHTML = '';
-
-      const filtered = channelsData.filter(channel =>
-        channel.name.toLowerCase().includes(filter.toLowerCase())
-      );
-
-      if (filtered.length === 0) {
-        statusMessage.textContent = 'No channels found.';
-        return;
-      }
-
-      statusMessage.textContent = '';
-
-      filtered.forEach(channel => {
-        const div = document.createElement('div');
-        div.className = 'channel';
-        div.onclick = () => openPlayer(channel.url || channel.website);
-
-        const img = document.createElement('img');
-        img.src = channel.logo || 'https://via.placeholder.com/140x100?text=No+Logo';
-        img.alt = channel.name;
-
-        const name = document.createElement('p');
-        name.textContent = channel.name;
-
-        div.appendChild(img);
-        div.appendChild(name);
-        channelsContainer.appendChild(div);
-      });
-    }
-
-    function openPlayer(url) {
-      if (!url) {
-        alert("This channel has no URL.");
-        return;
-      }
-      window.location.href = `player.html?url=${encodeURIComponent(url)}`;
-    }
-
-    async function fetchChannels() {
-      try {
-        const res = await fetch(API_URL);
-        if (!res.ok) throw new Error('Failed to fetch channels');
-        channelsData = await res.json();
-        renderChannels();
-      } catch (error) {
-        console.error(error);
-        statusMessage.textContent = 'Failed to load channels.';
-      }
-    }
-
-    function detectAdBlock() {
-      const ad = document.createElement('div');
-      ad.className = 'adsbox';
-      ad.style.display = 'none';
-      document.body.appendChild(ad);
-      setTimeout(() => {
-        if (getComputedStyle(ad).display === 'none') {
-          alert("AdBlock or Brave Shields detected. Please disable it for full functionality.");
-        }
-        ad.remove();
-      }, 100);
-    }
-
-    searchInput.addEventListener('input', () => {
-      renderChannels(searchInput.value);
-    });
-
-    // Init
-    detectAdBlock();
-    fetchChannels();
-  </script>
+  <iframe src="https://dingtezuni.com/embed/58q9yzue8hn3" width="640" height="360" scrolling="no" allowfullscreen></iframe>
 </body>
 </html>
