@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypt & Decrypt Form</title>
+    <title>Password Manager</title>
 </head>
 <body>
-    <h2>Encrypt & Decrypt Form</h2>
+    <h2>Password Manager</h2>
 
     <form id="form">
         <label for="website">Website:</label>
@@ -18,7 +18,7 @@
         <label for="password">Password:</label>
         <input type="password" id="password" required><br><br>
 
-        <label for="textarea">Additional Info:</label><br>
+        <label for="textarea">Notes:</label><br>
         <textarea id="textarea" rows="4" cols="50"></textarea><br><br>
 
         <label for="passphrase">Passphrase:</label>
@@ -34,6 +34,119 @@
     <script>
         // Function to derive a key from passphrase using PBKDF2
         async function deriveKey(passphrase) {
+            const encoder = new TextEncoder();
+            const passphraseKey = encoder.encode(passphrase);
+            const salt = crypto.getRandomValues(new Uint8Array(16)); // Random salt
+
+            return crypto.subtle.importKey(
+                "raw",
+                passphraseKey,
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            ).then(baseKey => {
+                return crypto.subtle.deriveKey(
+                    {
+                        name: "PBKDF2",
+                        salt: salt,
+                        iterations: 250000,
+                        hash: "SHA-256"
+                    },
+                    baseKey,
+                    { name: "AES-GCM", length: 256 },
+                    false,
+                    ["encrypt", "decrypt"]
+                );
+            });
+        }
+
+        // Function to encrypt data
+        async function encryptData(data, passphrase) {
+            const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization vector
+            const key = await deriveKey(passphrase);
+            const encodedData = new TextEncoder().encode(data);
+
+            const encryptedData = await crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                encodedData
+            );
+
+            return { encryptedData, iv };
+        }
+
+        // Function to decrypt data
+        async function decryptData(encryptedData, iv, passphrase) {
+            const key = await deriveKey(passphrase);
+            const decryptedData = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                encryptedData
+            );
+
+            const decodedData = new TextDecoder().decode(decryptedData);
+            return decodedData;
+        }
+
+        // Encrypt form data and download as .enc file
+        async function encryptAndDownload() {
+            const website = document.getElementById('website').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const textarea = document.getElementById('textarea').value;
+            const passphrase = document.getElementById('passphrase').value;
+
+            const formData = JSON.stringify({ website, username, password, textarea });
+
+            const { encryptedData, iv } = await encryptData(formData, passphrase);
+
+            const encFile = new Blob([iv, encryptedData], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(encFile);
+            link.download = 'passwords.enc';
+            link.click();
+        }
+
+        // Load and decrypt the .enc file
+        async function loadFile(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function() {
+                const data = reader.result;
+                const iv = new Uint8Array(data.slice(0, 12)); // First 12 bytes for IV
+                const encryptedData = new Uint8Array(data.slice(12)); // Rest is encrypted data
+
+                const passphrase = document.getElementById('passphrase').value;
+
+                const decryptedData = await decryptData(encryptedData, iv, passphrase);
+                const parsedData = JSON.parse(decryptedData);
+
+                document.getElementById('website').value = parsedData.website;
+                document.getElementById('username').value = parsedData.username;
+                document.getElementById('password').value = parsedData.password;
+                document.getElementById('textarea').value = parsedData.textarea;
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Open file picker to load .enc file
+        function loadAndDecrypt() {
+            document.getElementById('fileInput').click();
+        }
+
+        // Clear all fields
+        function clearFields() {
+            document.getElementById('website').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('textarea').value = '';
+            document.getElementById('passphrase').value = '';
+        }
+    </script>
+</body>
+</html>
             const encoder = new TextEncoder();
             const passphraseKey = encoder.encode(passphrase);
             const salt = crypto.getRandomValues(new Uint8Array(16)); // Random salt
